@@ -23,7 +23,7 @@ class AuthResponseHandler extends MessageActionHandler
      */
     public function handle(SpikeInterface $message)
     {
-        if (200 !== $message->getHeader('code')) {
+        if (200 !== (int) $message->getHeader('code')) {
             $this->getEventDispatcher()->dispatch(new Event(Events::AUTH_ERROR, $this->client, [
                 'message' => $message,
             ]));
