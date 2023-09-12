@@ -13,6 +13,7 @@ namespace Spike\Client\Worker;
 
 use React\Socket\ConnectionInterface;
 use React\Socket\Connector;
+use Spike\Client\Event\Events;
 use function Slince\Common\jsonBuffer;
 use Spike\Client\Client;
 use Spike\Common\Protocol\Spike;
@@ -89,7 +90,7 @@ class TcpWorker implements WorkerInterface
     {
         $this->proxyConnection = $connection;
         //Register proxy connection
-        $connection->write(new Spike('register_proxy', $this->tunnel->toArray(), [
+        $connection->write(new Spike(Events::REGISTER_PROXY, $this->tunnel->toArray(), [
             'public-connection-id' => $this->publicConnectionId,
         ]));
         $streamParser = new StreamingJsonParser();
@@ -99,7 +100,7 @@ class TcpWorker implements WorkerInterface
             }
             $message = reset($messages);
             $message = Spike::fromArray($message);
-            if ('start_proxy' === $message->getAction()) {// 开始发送代理请求
+            if (Events::START_PROXY === $message->getAction()) {// 代理请求
                 $this->initBuffer = $streamParser->getRemainingChunk();// 请求内容
                 $connection->removeAllListeners('data');// 移除隧道链接`data`数据流事件监听
                 $localAddress = $this->resolveTargetHost();
