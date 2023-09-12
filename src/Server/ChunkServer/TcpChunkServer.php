@@ -157,16 +157,16 @@ class TcpChunkServer implements ChunkServerInterface
             throw new InvalidArgumentException(sprintf('Cannot find the public connection "%s"', $publicConnectionId));
         }
         $startProxyMessage = new Spike('start_proxy');
-        $proxyConnection->write($startProxyMessage);
+        $proxyConnection->write($startProxyMessage); // 发送代理请求
         //Fires 'start_proxy' event
         $this->server->getEventDispatcher()->dispatch(new Event(Events::START_PROXY, $this, [
             'message' => $startProxyMessage,
         ]));
         //Resumes the public connection
         $publicConnection->resume();
-        $publicConnection->pipe($proxyConnection);
-        $proxyConnection->pipe($publicConnection->getConnection());
-        $proxyConnection->write($publicConnection->getInitBuffer());
+        $publicConnection->pipe($proxyConnection);// 绑定用户请求链接与Proxy链接
+        $proxyConnection->pipe($publicConnection->getConnection());// 绑定Proxy链接与用户请求链接
+        $proxyConnection->write($publicConnection->getInitBuffer()); // 转发用户请求内容至Proxy链接（Proxy链接有回应时回复用户请求）
 
         //Handles public connection close
         $handlePublicConnectionClose = function() use ($proxyConnection, $publicConnection, &$handleProxyConnectionClose){

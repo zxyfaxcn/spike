@@ -36,6 +36,7 @@ class RequestProxyHandler extends MessageActionHandler
         if ($tunnel instanceof HttpTunnel) {
             $tunnel->setProxyHost($tunnelInfo['proxyHost']);
         }
+        // 创建流链接
         $client = $this->createWorker($tunnel, $message->getHeader('public-connection-id'));
         $this->getEventDispatcher()->dispatch(new Event(Events::REQUEST_PROXY, $this, [
             'tunnel' => $tunnel,

@@ -64,7 +64,9 @@ class TcpWorker implements WorkerInterface
      */
     public function start()
     {
+        // 创建流连接
         $connector = new Connector($this->client->getEventLoop());
+        // 链接隧道Server（并注册处理函数 -> 注册代理链接）
         $connector->connect($this->client->getConfiguration()->getServerAddress())
             ->then([$this, 'handleProxyConnection']);
     }
@@ -91,17 +93,17 @@ class TcpWorker implements WorkerInterface
             'public-connection-id' => $this->publicConnectionId,
         ]));
         $streamParser = new StreamingJsonParser();
-        jsonBuffer($connection, function($messages) use ($connection, $streamParser){
+        jsonBuffer($connection, function ($messages) use ($connection, $streamParser) {
             if (!$messages) {
                 return;
             }
             $message = reset($messages);
             $message = Spike::fromArray($message);
-            if ('start_proxy' === $message->getAction()) {
-                $this->initBuffer = $streamParser->getRemainingChunk();
-                $connection->removeAllListeners('data');
+            if ('start_proxy' === $message->getAction()) {// 开始发送代理请求
+                $this->initBuffer = $streamParser->getRemainingChunk();// 请求内容
+                $connection->removeAllListeners('data');// 移除隧道链接`data`数据流事件监听
                 $localAddress = $this->resolveTargetHost();
-                $this->connectLocalHost($localAddress);
+                $this->connectLocalHost($localAddress);// 发起本地链接请求
             }
         }, null, $streamParser);
     }
@@ -114,10 +116,11 @@ class TcpWorker implements WorkerInterface
      */
     protected function connectLocalHost($address)
     {
+        // 创建流连接
         $localConnector = new Connector($this->client->getEventLoop());
-        $localConnector->connect($address)->then([$this, 'handleLocalConnection'],
-            [$this, 'handleConnectLocalError']
-        );
+        // 链接本地server（并注册处理函数）
+        $localConnector->connect($address)
+            ->then([$this, 'handleLocalConnection'], [$this, 'handleConnectLocalError']);
     }
 
     /**
@@ -127,19 +130,23 @@ class TcpWorker implements WorkerInterface
      */
     public function handleLocalConnection(ConnectionInterface $localConnection)
     {
+        // 为本地链接设置管道链接（代理）
         $localConnection->pipe($this->proxyConnection);
+        // 为代理链接设置管道链接（本地）
         $this->proxyConnection->pipe($localConnection);
+
+        // 向本地链接写入buffer
         $localConnection->write($this->initBuffer);
 
         //Handles the local connection close
-        $handleLocalConnectionClose = function(){
+        $handleLocalConnectionClose = function () {
             $this->stop();
         };
         $localConnection->on('close', $handleLocalConnectionClose);
         $localConnection->on('error', $handleLocalConnectionClose);
 
         //Handles the proxy connection close
-        $handleProxyConnectionClose = function(){
+        $handleProxyConnectionClose = function () {
             $this->stop();
         };
         $this->proxyConnection->on('close', $handleProxyConnectionClose);

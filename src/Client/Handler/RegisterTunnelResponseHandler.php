@@ -32,7 +32,7 @@ class RegisterTunnelResponseHandler extends MessageActionHandler
         if (!$tunnel) {
             throw new InvalidArgumentException('Can not find the matching tunnel');
         }
-        if (200 === $message->getHeader('code')) {
+        if (200 === (int) $message->getHeader('code')) {
             $event = new Event(Events::REGISTER_TUNNEL_SUCCESS, $this->client, [
                 'tunnel' => $tunnel,
             ]);

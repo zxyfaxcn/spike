@@ -38,10 +38,11 @@ function jsonBuffer(ReadableStreamInterface $stream, callable $resolve, callable
             $resolve($parsed);
         }
     };
+    // --------- 监听链接事件 ---------
     $stream->on('data', $bufferer);
     $stream->on('error', function ($error) use ($stream, $bufferer, $reject) {
         $stream->removeListener('data', $bufferer);
-        $reject && $reject(new RuntimeException('An error occured on the underlying stream while buffering', 0, $error));
+        $reject && $reject(new RuntimeException('An error occurred on the underlying stream while buffering', 0, $error));
     });
     $stream->on('close', function () use ($resolve, $streamParser) {
         $resolve($streamParser->push(''));
