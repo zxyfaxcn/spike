@@ -42,7 +42,11 @@ class StreamingJsonParser
                 }
             }
 
-            $pos = strpos($chunk, $this->endCharacter);
+            $pos = false;
+
+            if ($this->endCharacter !== null && $this->endCharacter !== '') {
+                $pos = strpos($chunk, $this->endCharacter);
+            }
 
             // no end found in chunk => must be part of segment, wait for next chunk
             if (false === $pos) {
