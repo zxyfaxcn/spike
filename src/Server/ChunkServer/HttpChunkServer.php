@@ -11,8 +11,8 @@
 
 namespace Spike\Server\ChunkServer;
 
+use GuzzleHttp\Psr7\Message;
 use GuzzleHttp\Psr7\Response;
-use GuzzleHttp\Psr7;
 use function Slince\Common\httpHeaderBuffer;
 use Spike\Common\Protocol\HttpHeaderParser;
 use Spike\Server\Server;
@@ -35,7 +35,7 @@ class HttpChunkServer extends TcpChunkServer
                 return;
             }
             $message = reset($messages);
-            $psrRequest = Psr7\parse_request($message);
+            $psrRequest = Message::parseRequest($message);
             $host = $psrRequest->getUri()->getHost();
             if ($this->tunnel->supportProxyHost($host)) {
                 $this->tunnel->setProxyHost($host);
@@ -45,7 +45,7 @@ class HttpChunkServer extends TcpChunkServer
             } else {
                 $body = sprintf('The host "%s" was not bound.', $host);
                 $response = $this->makeErrorResponse(404, $body);
-                $publicConnection->end(Psr7\str($response));
+                $publicConnection->end(Message::toString($response));
             }
         });
     }
@@ -73,7 +73,7 @@ class HttpChunkServer extends TcpChunkServer
      */
     public function closePublicConnection(PublicConnection $publicConnection, $message = null)
     {
-        $publicConnection->end(Psr7\str($this->makeErrorResponse(500, $message ?: 'Timeout')));
+        $publicConnection->end(Message::toString($this->makeErrorResponse(500, $message ?: 'Timeout')));
         $this->publicConnections->removeElement($publicConnection);
     }
 }

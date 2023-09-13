@@ -39,7 +39,7 @@ class RegisterTunnelHandler extends RequireAuthHandler
                 ]);
             } catch (\Exception $exception) {
                 $body = array_merge($tunnel->toArray(), [
-                    'error' => iconv ('UTF-8', 'UTF-8//IGNORE', $exception->getMessage())
+                    'error' => iconv('UTF-8', 'UTF-8//IGNORE', $exception->getMessage())
                 ]);
                 $response = new Spike('register_tunnel_response', $body, [
                     'code' => $exception->getCode() ?: 1,

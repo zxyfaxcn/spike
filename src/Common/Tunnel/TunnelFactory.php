@@ -15,7 +15,7 @@ class TunnelFactory
 {
     public static function fromArray($data)
     {
-        if ('http' == $data['protocol']) {
+        if ('http' === $data['protocol']) {
             $tunnel = new HttpTunnel($data['serverPort'], $data['proxyHosts']);
         } else {
             $tunnel = new TcpTunnel($data['serverPort'], $data['host']);

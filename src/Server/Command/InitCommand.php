@@ -39,7 +39,7 @@ class InitCommand extends Command
         $config = new Config($templateConfigFile);
         $dstPath = $input->getOption('dir');
         $extension = $input->getOption('format');
-        if (!in_array($extension, $this->getSupportedFormats())) {
+        if (!in_array($extension, $this->getSupportedFormats(), true)) {
             $output->writeln(sprintf('<error>The format "%s" is not supported</error>', $extension));
 
             return false;

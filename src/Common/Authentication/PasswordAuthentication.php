@@ -28,7 +28,7 @@ class PasswordAuthentication implements AuthenticationInterface
             throw new InvalidArgumentException('Invalid arguments');
         }
 
-        return ($this->auth['username'] == $auth['username'])
-            && (!isset($this->auth['password']) || $this->auth['password'] == $auth['password']);
+        return ($this->auth['username'] === $auth['username'])
+            && (!isset($this->auth['password']) || $this->auth['password'] === $auth['password']);
     }
 }

@@ -12,6 +12,7 @@
 namespace Spike\Client\Worker;
 
 use GuzzleHttp\Psr7;
+use GuzzleHttp\Psr7\Message;
 use Spike\Client\Client;
 use Spike\Common\Tunnel\HttpTunnel;
 use Spike\Common\Tunnel\TunnelInterface;
@@ -33,7 +34,7 @@ class HttpWorker extends TcpWorker
     public function handleConnectLocalError(\Exception $exception)
     {
         $response = $this->makeErrorResponse(500, $exception->getMessage());
-        $this->proxyConnection->end(Psr7\str($response));
+        $this->proxyConnection->end(Message::toString($response));
         $this->stop();
     }
 
@@ -60,6 +61,6 @@ class HttpWorker extends TcpWorker
      */
     public static function support(TunnelInterface $tunnel)
     {
-        $tunnel instanceof HttpTunnel;
+        return $tunnel instanceof HttpTunnel;
     }
 }
